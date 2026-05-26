@@ -1,6 +1,4 @@
--- ============================================================
--- VENDOR RISK INTELLIGENCE — COMPACT & OPTIMIZED
--- ============================================================
+-- VENDOR RISK INTELLIGENCE
 
 -- SECTION 1: SCHEMA SETUP
 CREATE TABLE vendors (
@@ -29,7 +27,7 @@ CREATE TABLE incidents (
 
 
 -- SECTION 2: AUTOMATED RISK TIER SCORING
--- 2a. Composite Intake Score per Vendor (Compressed Logic)
+-- 2a. Composite Intake Score per Vendor 
 WITH weighted AS (
     SELECT vendor_id, vendor_name, category, data_access_level,
         ROUND((
@@ -83,7 +81,7 @@ FROM vendors ORDER BY category, contract_value_usd DESC;
 
 
 -- SECTION 4: DATA BREACH IMPACT ASSESSMENT
--- 4a. Incident Cost Rollup per Vendor (With Corrected Severity Logic)
+-- 4a. Incident Cost Rollup per Vendor 
 SELECT i.vendor_id, v.vendor_name, v.risk_tier, COUNT(i.incident_id) AS total_incidents,
     SUM(i.records_exposed) AS total_records_exposed, SUM(i.estimated_cost_usd) AS total_incident_cost,
     ROUND(AVG(COALESCE(i.resolution_days, 0)), 1) AS avg_resolution_days, SUM(CASE WHEN i.resolved = 0 THEN 1 ELSE 0 END) AS open_incidents,
@@ -100,7 +98,7 @@ FROM incidents i JOIN vendors v ON i.vendor_id = v.vendor_id
 GROUP BY v.category, i.severity
 ORDER BY v.category, CHARINDEX(i.severity, 'CRITICAL,HIGH,MEDIUM,LOW');
 
--- 4c. Open & Critical Incident Watchlist (Safe NULL Handling)
+-- 4c. Open & Critical Incident Watchlist
 SELECT i.incident_id, v.vendor_name, v.risk_tier, i.incident_date, i.incident_type, i.severity, i.records_exposed, i.estimated_cost_usd,
     COALESCE(i.resolution_days, 0) AS resolution_days, i.root_cause,
     ROUND((i.estimated_cost_usd / 10000.0) + (COALESCE(i.resolution_days, 0) * 0.5), 1) AS urgency_score
@@ -128,8 +126,8 @@ GROUP BY v.country
 ORDER BY (gdpr_gaps + soc2_gaps + iso_gaps) DESC;
 
 
--- SECTION 6: EXECUTIVE KPI SUMMARY (CRITICAL PERFORMANCE FIXED)
--- Replaced 11 slow table scans with 2 fast conditional aggregations joined together
+-- SECTION 6: EXECUTIVE KPI SUMMARY
+
 SELECT * FROM (
     SELECT COUNT(*) AS total_vendors, SUM(contract_value_usd) AS total_portfolio_spend,
         ROUND(AVG(financial_health_score), 1) AS avg_financial_health,
